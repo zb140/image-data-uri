@@ -1,6 +1,6 @@
 {
   "name": "@zb140/image-data-uri",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Library to easily decode/encode Data URI images",
   "main": "./dist/image-data-uri.js",
   "types": "./dist/image-data-uri.d.ts",
