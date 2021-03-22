@@ -1,72 +1,78 @@
 const fs = require("fs-extra");
 const assert = require("assert");
 
-const ImageDataURI = require("../lib/image-data-uri");
+const { default: ImageDataURI } = require("../dist/image-data-uri");
 
 const matchMediaType = /^data:([^;,]+)[;,]/;
 
 describe("ImageDataURI", () => {
-  describe("encodeFromFile", () => {
-    it("declares correct media type for test-file.jpg", () => {
-      return ImageDataURI.encodeFromFile("test/test-file.jpg").then(dataURI => {
-        const m = dataURI.match(matchMediaType);
-        assert.equal("image/jpeg", m[1]);
-      });
-    });
+    describe("encodeFromFile", () => {
+        it("declares correct media type for test-file.jpg", async () => {
+            const dataURI = await ImageDataURI.encodeFromFile("test/test-file.jpg");
+            const m = dataURI.match(matchMediaType);
 
-    it("declares correct media type for test-file-alternate.jpeg", () => {
-      return ImageDataURI.encodeFromFile("test/test-file-alternate.jpeg").then(
-        dataURI => {
-          const m = dataURI.match(matchMediaType);
-          assert.equal("image/jpeg", m[1]);
-        }
-      );
-    });
+            assert.strictEqual("image/jpeg", m[ 1 ]);
+        });
 
-    it("declares correct media type for test-file.svg", () => {
-      return ImageDataURI.encodeFromFile("test/test-file.svg").then(dataURI => {
-        const m = dataURI.match(matchMediaType);
-        assert.equal("image/svg+xml", m[1]);
-      });
-    });
+        it("declares correct media type for test-file-alternate.jpeg", async () => {
+            const dataURI = await ImageDataURI.encodeFromFile("test/test-file-alternate.jpeg");
+            const m = dataURI.match(matchMediaType);
 
-    it("fails when media type is unknown", () => {
-      return ImageDataURI.encodeFromFile("unknown").catch(error => {
-        assert.equal(
-          "ImageDataURI :: Error :: Couldn't recognize media type for file",
-          error
-        );
-      });
-    });
-  });
+            assert.strictEqual("image/jpeg", m[ 1 ]);
+        });
 
-  describe("encodeFromURL", () => {
-    it("declares correct media type for a google logo", () => {
-      return ImageDataURI.encodeFromURL("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png").then(dataURI => {
-        const m = dataURI.match(matchMediaType);
-        assert.equal("image/png", m[1]);
-      });
-    });
-    it("fails on a 404 URL", () => {
-      return ImageDataURI.encodeFromURL("http://150dcace0756dba5a895-b1479f7526781e2361a99185a4979d91.r53.cf1.rackcdn.com/library/assets/825127ec")
-        .catch(err => {
-          assert.ok(typeof err === 'string');
+        it("declares correct media type for test-file.svg", async () => {
+            const dataURI = await ImageDataURI.encodeFromFile("test/test-file.svg");
+            const m = dataURI.match(matchMediaType);
+
+            assert.strictEqual("image/svg+xml", m[ 1 ]);
+        });
+
+        it("fails when media type is unknown", async () => {
+            try {
+                return await ImageDataURI.encodeFromFile("unknown");
+            } catch (error) {
+                assert.strictEqual(
+                    "ImageDataURI :: Error :: Couldn't recognize media type for file",
+                    error.message
+                );
+            }
         });
     });
-  });
 
-  describe("outputFile", () => {
-    const outputFilePath = `${__dirname}/tmp-output`;
-    const expectedOutputFile = `${__dirname}/tmp-output.svg`;
+    describe("encodeFromURL", () => {
+        it("declares correct media type for a google logo", async () => {
+            const dataURI = await ImageDataURI.encodeFromURL("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png");
+            const m = dataURI.match(matchMediaType);
 
-    it("writes image/svg+xml data to a file with .svg extension", () => {
-      return ImageDataURI.encodeFromFile("test/test-file.svg")
-        .then(dataURI => ImageDataURI.outputFile(dataURI, outputFilePath))
-        .then(outputPath => assert.equal(expectedOutputFile, outputPath));
+            assert.strictEqual("image/png", m[ 1 ]);
+        });
+
+        it("fails on a 404 URL", async () => {
+            try {
+                // TODO: tried to use example.com but it doesn't return 404 for
+                // unknown paths.  I'd rather not use Google but at least it's
+                // less opaque than the URL that used to be here.
+                return await ImageDataURI.encodeFromURL("https://google.com/foo.png");
+            } catch (err) {
+                assert.match(err.message, /returned an HTTP 404 status/);
+            }
+        });
     });
 
-    after(function() {
-      fs.removeSync(expectedOutputFile);
+    describe("outputFile", () => {
+        const outputFilePath = `${__dirname}/tmp-output`;
+        const expectedOutputFile = `${__dirname}/tmp-output.svg`;
+
+        it("writes image/svg+xml data to a file with .svg extension", async () => {
+            const dataURI = await ImageDataURI.encodeFromFile("test/test-file.svg");
+            const outputPath = await ImageDataURI.outputFile(dataURI, outputFilePath);
+
+            return assert.strictEqual(expectedOutputFile, outputPath);
+        });
+
+        after(function() {
+            fs.removeSync(expectedOutputFile);
+        });
     });
-  });
 });
