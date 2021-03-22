@@ -5,7 +5,9 @@
   "main": "./dist/image-data-uri.js",
   "types": "./dist/image-data-uri.d.ts",
   "files": [
-    "./dist/**"
+    "dist/*.js",
+    "dist/*.map",
+    "dist/*.d.ts"
   ],
   "dependencies": {
     "fs-extra": "^9.1.0",
