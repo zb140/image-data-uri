@@ -62,7 +62,7 @@ export default class ImageDataURI {
         }
     }
 
-    static async encodeFromURL(imageURL: string, options: ImageDataURIOptions): Promise<string | null> {
+    static async encodeFromURL(imageURL: string, options?: ImageDataURIOptions): Promise<string | null> {
         if (!imageURL) {
             throw new Error('ImageDataURI :: Error :: Missing some of the required params: imageURL');
         }
